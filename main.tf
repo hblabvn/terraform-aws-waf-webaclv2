@@ -108,7 +108,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
   }
 
-  dynamic "ip_rate_based_rule" {
+  dynamic "rule" {
     for_each = var.ip_rate_based_rule != null ? [var.ip_rate_based_rule] : []
     content {
       name     = lookup(ip_rate_based_rule.value, "name")
