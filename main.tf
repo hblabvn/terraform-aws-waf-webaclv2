@@ -108,33 +108,33 @@ resource "aws_wafv2_web_acl" "main" {
     }
   }
 
-  dynamic "rule" {
+  dynamic "ip_rate_based_rule" {
     for_each = var.ip_rate_based_rule != null ? [var.ip_rate_based_rule] : []
     content {
-      name     = lookup(rule.value, "name")
-      priority = lookup(rule.value, "priority")
+      name     = lookup(ip_rate_based_rule.value, "name")
+      priority = lookup(ip_rate_based_rule.value, "priority")
 
       action {
         dynamic "count" {
-          for_each = lookup(rule.value, "action", {}) == "count" ? [1] : []
+          for_each = lookup(ip_rate_based_rule.value, "action", {}) == "count" ? [1] : []
           content {}
         }
 
         dynamic "block" {
-          for_each = length(lookup(rule.value, "action", {})) == 0 || lookup(rule.value, "action", {}) == "block" ? [1] : []
+          for_each = length(lookup(ip_rate_based_rule.value, "action", {})) == 0 || lookup(ip_rate_based_rule.value, "action", {}) == "block" ? [1] : []
           content {}
         }
       }
 
       statement {
         dynamic "rate_based_statement" {
-          for_each = length(lookup(rule.value, "rate_based_statement", {})) == 0 ? [] : [lookup(rule.value, "rate_based_statement", {})]
+          for_each = length(lookup(ip_rate_based_rule.value, "rate_based_statement", {})) == 0 ? [] : [lookup(ip_rate_based_rule.value, "rate_based_statement", {})]
           content {
             limit              = lookup(rate_based_statement.value, "limit")
             aggregate_key_type = lookup(rate_based_statement.value, "aggregate_key_type", "IP")
 
             dynamic "forwarded_ip_config" {
-              for_each = length(lookup(rule.value, "forwarded_ip_config", {})) == 0 ? [] : [lookup(rule.value, "forwarded_ip_config", {})]
+              for_each = length(lookup(ip_rate_based_rule.value, "forwarded_ip_config", {})) == 0 ? [] : [lookup(ip_rate_based_rule.value, "forwarded_ip_config", {})]
               content {
                 fallback_behavior = lookup(forwarded_ip_config.value, "fallback_behavior")
                 header_name       = lookup(forwarded_ip_config.value, "header_name")
@@ -145,7 +145,7 @@ resource "aws_wafv2_web_acl" "main" {
       }
 
       dynamic "visibility_config" {
-        for_each = length(lookup(rule.value, "visibility_config")) == 0 ? [] : [lookup(rule.value, "visibility_config", {})]
+        for_each = length(lookup(ip_rate_based_rule.value, "visibility_config")) == 0 ? [] : [lookup(ip_rate_based_rule.value, "visibility_config", {})]
         content {
           cloudwatch_metrics_enabled = lookup(visibility_config.value, "cloudwatch_metrics_enabled", true)
           metric_name                = lookup(visibility_config.value, "metric_name", "${var.name_prefix}-ip-rate-based-rule-metric-name")
